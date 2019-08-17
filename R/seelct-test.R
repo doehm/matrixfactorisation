@@ -1,0 +1,23 @@
+#' @title Matrix factorisation test set
+#' @description Select a test set to pass to \code{matrix_factorisation}
+#' @param Y Matrix with missing values. Missing values should be \code{NA}
+#' @param r Ratio i.e. proption of observations held out for testing
+#' @details Implements matrix factorisation by gradient descent. Matrix \code{Y} should have \code{NA}'s as missing values. The matrix will be factorised
+#' into two matrices U and V, the user and feature matrix. The U matrix essentially contains weight each user gives to a certain feature. The
+#' function will output the accuracy of the selected test sample by using \code{test}. See \code{select_test} for more information.
+#' @importFrom progress progress_bar
+#' @examples
+#' \dontrun{
+#' m <- matrix(sample(c(NA, 1:5), 60, replace = TRUE, prob = c(0.2, rep(0.8/5, 5))), nrow = 10)
+#' id <- select_test(m, 0.2)
+#' mf <- matrix_factorisation(m, 2, test = id$test)
+#' mf$pred
+#' }
+#' @export
+
+select_test <- function(Y, r){
+  id <- sample(which(!is.na(Y)), length(which(!is.na(Y)))*r)
+  train <- Y
+  train[id] <- NA
+  list(train = train, test = id)
+}
