@@ -50,7 +50,7 @@ matrix_factorisation <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001
   k <- 1
 
   pb <- progress_bar$new(
-    format = ":elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // test :testrmse // delta :delta",
+    format = ":elapsedfull // epoch :epoch // train :trainrmse // test :testrmse // delta :delta",
     clear = FALSE, total = NA)
 
   while ((k_epoch <= epochs & tol < delta)) {
