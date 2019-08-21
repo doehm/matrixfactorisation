@@ -4,8 +4,8 @@
 \alias{matrix_factorisation}
 \title{Matrix factorisation}
 \usage{
-matrix_factorisation(Y, k_dim, test = NULL, epochs = 2000,
-  lr = 0.001, lambda = 0.02, tol = 1e-06)
+matrix_factorisation(Y, k_dim, test = NULL, epochs = 500, lr = 0.001,
+  lambda = 0.02, tol = 1e-06, pbar = FALSE)
 }
 \arguments{
 \item{Y}{Matrix with missing values. Missing values should be \code{NA}}
@@ -21,6 +21,8 @@ matrix_factorisation(Y, k_dim, test = NULL, epochs = 2000,
 \item{lambda}{Regularisation parameter}
 
 \item{tol}{Iteration tolerance}
+
+\item{pbar}{Progress bar toggle}
 }
 \description{
 Applies matrix factorisation by gradient descent (Funk SVD) to a given matrix with missing values

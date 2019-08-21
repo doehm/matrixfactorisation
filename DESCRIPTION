@@ -1,7 +1,7 @@
 Package: matrixfactorisation
 Type: Package
 Title: Factorises a matrix using gradient descent
-Version: 0.1.0
+Version: 0.2.0
 Author: Daniel Oehm
 Maintainer: Daniel Oehm <danieloehm@gmail.com>
 Description: This package contains functions to factorise a matrix into two matrices, in the context of recommendations and user and item matrix. Factoristaion algorithms include FUnkSVD and alternating least squares. Also contains helper functions for testing.
