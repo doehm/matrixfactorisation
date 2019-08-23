@@ -14,7 +14,7 @@
 #' @importFrom stats rnorm
 #' @examples
 #' \dontrun{
-#' m <- matrix(sample(1:5, 60, replace = TRUE, nrow = 10)
+#' m <- matrix(sample(1:5, 60, replace = TRUE), nrow = 10)
 #' mf <- als(m, 2)
 #' mf$pred
 #' }
@@ -23,15 +23,15 @@
 
 # als
 
-als <- function(Y, k_dim, test = NULL, epochs = 500, lambda = 0.01, tol = 1e-6, pbar = FALSE){
+als <- function(Y, k_dim, test = NULL, epochs = 200, lambda = 0.01, tol = 1e-6, pbar = FALSE){
 
   # set train
   Y_train <- Y
   if(!is.null(test)) Y_train[test] <- NA
 
   # initialise matrices and id values
-  U <- matrix(rnorm(k_dim*nrow(Y), 0, 0.1), nrow = nrow(Y), ncol = k_dim, dimnames = list(rownames(Y)))
-  V <- matrix(rnorm(k_dim*ncol(Y), 0, 0.1), nrow = ncol(Y), ncol = k_dim, dimnames = list(colnames(Y)))
+  U <- matrix(rnorm(k_dim*nrow(Y), 0, 0.01), nrow = nrow(Y), ncol = k_dim, dimnames = list(rownames(Y)))
+  V <- matrix(rnorm(k_dim*ncol(Y), 0, 0.01), nrow = ncol(Y), ncol = k_dim, dimnames = list(colnames(Y)))
 
   observed_rating_id <- matrix(!is.na(Y_train), nrow = nrow(Y_train), ncol = ncol(Y_train))
   observed_user_list <- lapply(1:ncol(Y), function(x) which(observed_rating_id[,x] == 1))
@@ -47,41 +47,41 @@ als <- function(Y, k_dim, test = NULL, epochs = 500, lambda = 0.01, tol = 1e-6, 
   k <- 1
 
   pb <- progress_bar$new(
-    format = ":elapsedfull // epoch :epoch // train :trainrmse // test :testrmse // delta :delta",
+    format = ":elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // test :testrmse // delta :delta",
     clear = FALSE, total = NA)
 
   # als
   while ((k_epoch <= epochs & tol < delta)) {
 
-    for (latent_var in 1:k_dim) {
-
-      # loop through each item where there exists a rating and update U
-      for (j in 1:ncol(Y)) {
-        ur <- observed_user_list[[j]]
-        V[j, latent_var] <- (solve(t(U) %*% U) %*% t(U))[latent_var, ur] %*% as.matrix(Y_train[ur, j])
-      }
-
-      # loop through each user where there exists a rating and update V
-      for (i in 1:nrow(Y)) {
-        ir <- observed_item_list[[i]]
-        U[i, latent_var] <- (solve(t(V) %*% V) %*% t(V))[latent_var, ir] %*% as.matrix(Y_train[i, ir])
-      }
-
-      error <- (Y_train - U %*% t(V))
-      rmse <- c(rmse, sqrt(sum(error[observed_rating_id]^2)/n_ratings))
-      rmse_test <- c(rmse_test, sqrt(sum((Y - U %*% t(V))[test]^2)/length(test)))
-      k <- k + 1
-      delta <- abs(rmse[k-1] - rmse[k])
-      if(is.nan(rmse[k])) stop("gradient explosion - try smaller learning rate")
-
-      if(pbar) pb$tick(tokens = list(kdim = k_dim, epoch = k_epoch, trainrmse = format(round(rmse[k], 4), nsmall = 4),
-                                     testrmse = format(round(rmse_test[k], 4), nsmall = 4),
-                                     delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE)
-      ))
+    # loop through each item where there exists a rating and update U
+    for (j in 1:ncol(Y)) {
+      ur <- observed_user_list[[j]]
+      u <- U[ur,]
+      if(length(ur) == 1) u <- matrix(U[ur,], ncol = k_dim)
+      V[j, ] <- t((solve(t(u) %*% u + lambda*diag(k_dim)) %*% t(u)) %*% Y_train[ur, j])
     }
+
+    # loop through each user where there exists a rating and update V
+    for (i in 1:nrow(Y)) {
+      ir <- observed_item_list[[i]]
+      v <- V[ir,]
+      if(length(ir) == 1) v <- matrix(V[ir,], ncol = k_dim)
+      U[i, ] <- t((solve(t(v) %*% v) %*% t(v)) %*% Y_train[i, ir])
+    }
+
+    error <- (Y_train - U %*% t(V))
+    rmse <- c(rmse, sqrt(sum(error[observed_rating_id]^2)/n_ratings))
+    rmse_test <- c(rmse_test, sqrt(sum((Y - U %*% t(V))[test]^2)/length(test)))
+    k <- k + 1
+    delta <- abs(rmse[k-1] - rmse[k])
+
+    if(pbar) pb$tick(tokens = list(kdim = k_dim, epoch = k_epoch, trainrmse = format(round(rmse[k], 4), nsmall = 4),
+                                   testrmse = format(round(rmse_test[k], 4), nsmall = 4), delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE)
+    ))
     k_epoch <- k_epoch + 1
   }
-  cat("\n")
-  return(list(pred = U %*% t(V), u = U, v = V, k_dim = k_dim, epochs = epochs, train = rmse, test = rmse_test, delta = delta))
+  out <- list(pred = U %*% t(V), u = U, v = V, k_dim = k_dim, epochs = epochs, train = rmse, test = rmse_test, delta = delta)
+  class(out) <- append(class(out), "mf")
+  return(out)
 }
 

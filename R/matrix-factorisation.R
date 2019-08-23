@@ -82,6 +82,7 @@ matrix_factorisation <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001
     }
     k_epoch <- k_epoch + 1
   }
-  cat("\n")
-  return(list(pred = U %*% t(V), u = U, v = V, k_dim = k_dim, epochs = epochs, train = rmse, test = rmse_test, delta = delta))
+  out <- list(pred = U %*% t(V), u = U, v = V, k_dim = k_dim, epochs = epochs, train = rmse, test = rmse_test, delta = delta)
+  class(out) <- append(class(out), "mf")
+  return(out)
 }

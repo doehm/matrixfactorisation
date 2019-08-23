@@ -4,7 +4,7 @@
 \alias{als}
 \title{Alternating Least Squares}
 \usage{
-als(Y, k_dim, test = NULL, epochs = 500, lambda = 0.01,
+als(Y, k_dim, test = NULL, epochs = 200, lambda = 0.01,
   tol = 1e-06, pbar = FALSE)
 }
 \arguments{
@@ -32,7 +32,7 @@ function will output the accuracy of the selected test sample by using \code{tes
 }
 \examples{
 \dontrun{
-m <- matrix(sample(1:5, 60, replace = TRUE, nrow = 10)
+m <- matrix(sample(1:5, 60, replace = TRUE), nrow = 10)
 mf <- als(m, 2)
 mf$pred
 }
