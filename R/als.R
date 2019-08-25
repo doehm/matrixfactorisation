@@ -14,8 +14,9 @@
 #' @importFrom stats rnorm
 #' @examples
 #' \dontrun{
-#' m <- matrix(sample(1:5, 60, replace = TRUE), nrow = 10)
-#' mf <- als(m, 2)
+#' m <- matrix(sample(c(NA, 1:5), 60, replace = TRUE, prob = c(0.2, rep(0.8/5, 5))), nrow = 10)
+#' id <- select_test(m, 0.2)
+#' mf <- als(m, 2, test = id$test)
 #' mf$pred
 #' }
 #' @export
@@ -23,7 +24,7 @@
 
 # als
 
-als <- function(Y, k_dim, test = NULL, epochs = 200, lambda = 0.01, tol = 1e-6, pbar = FALSE){
+als <- function(Y, k_dim, test = NULL, epochs = 10, lambda = 0.01, tol = 1e-6, pbar = FALSE){
 
   # set train
   Y_train <- Y
@@ -66,7 +67,7 @@ als <- function(Y, k_dim, test = NULL, epochs = 200, lambda = 0.01, tol = 1e-6, 
       ir <- observed_item_list[[i]]
       v <- V[ir,]
       if(length(ir) == 1) v <- matrix(V[ir,], ncol = k_dim)
-      U[i, ] <- t((solve(t(v) %*% v) %*% t(v)) %*% Y_train[i, ir])
+      U[i, ] <- t((solve(t(v) %*% v + lambda*diag(k_dim)) %*% t(v)) %*% Y_train[i, ir])
     }
 
     error <- (Y_train - U %*% t(V))
@@ -75,12 +76,14 @@ als <- function(Y, k_dim, test = NULL, epochs = 200, lambda = 0.01, tol = 1e-6, 
     k <- k + 1
     delta <- abs(rmse[k-1] - rmse[k])
 
-    if(pbar) pb$tick(tokens = list(kdim = k_dim, epoch = k_epoch, trainrmse = format(round(rmse[k], 4), nsmall = 4),
-                                   testrmse = format(round(rmse_test[k], 4), nsmall = 4), delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE)
-    ))
+    if(pbar) pb$tick(tokens = list(kdim = k_dim, epoch = k_epoch,
+                                   trainrmse = format(round(rmse[k], 4), nsmall = 4),
+                                   testrmse = format(round(rmse_test[k], 4), nsmall = 4),
+                                   delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE)))
+
     k_epoch <- k_epoch + 1
   }
-  out <- list(pred = U %*% t(V), u = U, v = V, k_dim = k_dim, epochs = epochs, train = rmse, test = rmse_test, delta = delta)
+  out <- list(pred = U %*% t(V), u = U, v = V, k_dim = k_dim, epochs = epochs , train = rmse, test = rmse_test, delta = delta)
   class(out) <- append(class(out), "mf")
   return(out)
 }

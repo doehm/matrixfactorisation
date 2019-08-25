@@ -3,11 +3,13 @@
 #' @param x Matix factorisation object \code{mf}
 #' @param ... Dots
 #' @details Plots the convergence profile.
-#' @rdname matfact
 #' @importFrom tibble tibble
 #' @importFrom ggplot2 ggplot geom_line labs aes
 #' @examples
 #' \dontrun{
+#' m <- matrix(sample(c(NA, 1:5), 60, replace = TRUE, prob = c(0.2, rep(0.8/5, 5))), nrow = 10)
+#' id <- select_test(m, 0.2)
+#' mf <- matrix_factorisation(m, 2, test = id$test)
 #' plot(mf)
 #' }
 #' @export

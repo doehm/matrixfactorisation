@@ -77,8 +77,8 @@ matrix_factorisation <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001
       if(is.nan(rmse[k])) stop("gradient explosion - try smaller learning rate")
 
       if(pbar) pb$tick(tokens = list(kdim = k_dim, epoch = k_epoch, trainrmse = format(round(rmse[k], 4), nsmall = 4),
-                            testrmse = format(round(rmse_test[k], 4), nsmall = 4), delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE)
-      ))
+                            testrmse = format(round(rmse_test[k], 4), nsmall = 4),
+                            delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE)))
     }
     k_epoch <- k_epoch + 1
   }
@@ -86,3 +86,4 @@ matrix_factorisation <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001
   class(out) <- append(class(out), "mf")
   return(out)
 }
+
