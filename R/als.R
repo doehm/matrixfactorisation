@@ -47,9 +47,13 @@ als <- function(Y, k_dim, test = NULL, epochs = 10, lambda = 0.01, tol = 1e-6, p
   k_epoch <- 1
   k <- 1
 
-  pb <- progress_bar$new(
-    format = ":elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // test :testrmse // delta :delta",
-    clear = FALSE, total = NA)
+  tokens <- function() list(kdim = k_dim, epoch = k_epoch, trainrmse = format(round(rmse[k], 4), nsmall = 4),
+                            testrmse = format(round(rmse_test[k], 4), nsmall = 4),
+                            delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE))
+
+  fmt <- ":spin :elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // test :testrmse // delta :delta"
+  if(is.null(test)) fmt <- ":spin :elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // delta :delta"
+  pb <- progress_bar$new(format = fmt, clear = FALSE, total = NA)
 
   # als
   while ((k_epoch <= epochs & tol < delta)) {
@@ -60,6 +64,7 @@ als <- function(Y, k_dim, test = NULL, epochs = 10, lambda = 0.01, tol = 1e-6, p
       u <- U[ur,]
       if(length(ur) == 1) u <- matrix(U[ur,], ncol = k_dim)
       V[j, ] <- t((solve(t(u) %*% u + lambda*diag(k_dim)) %*% t(u)) %*% Y_train[ur, j])
+      if(pbar) pb$tick(tokens = tokens())
     }
 
     # loop through each user where there exists a rating and update V
@@ -68,6 +73,7 @@ als <- function(Y, k_dim, test = NULL, epochs = 10, lambda = 0.01, tol = 1e-6, p
       v <- V[ir,]
       if(length(ir) == 1) v <- matrix(V[ir,], ncol = k_dim)
       U[i, ] <- t((solve(t(v) %*% v + lambda*diag(k_dim)) %*% t(v)) %*% Y_train[i, ir])
+      if(pbar) pb$tick(tokens = tokens())
     }
 
     error <- (Y_train - U %*% t(V))
@@ -76,10 +82,7 @@ als <- function(Y, k_dim, test = NULL, epochs = 10, lambda = 0.01, tol = 1e-6, p
     k <- k + 1
     delta <- abs(rmse[k-1] - rmse[k])
 
-    if(pbar) pb$tick(tokens = list(kdim = k_dim, epoch = k_epoch,
-                                   trainrmse = format(round(rmse[k], 4), nsmall = 4),
-                                   testrmse = format(round(rmse_test[k], 4), nsmall = 4),
-                                   delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE)))
+    if(pbar) pb$tick(tokens = tokens())
 
     k_epoch <- k_epoch + 1
   }
