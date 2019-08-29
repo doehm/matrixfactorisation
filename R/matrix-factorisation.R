@@ -49,7 +49,7 @@ matrix_factorisation <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001
   k_epoch <- 1
   k <- 1
 
-  tokens <- function() list(kdim = k_dim, epoch = k_epoch, trainrmse = format(round(rmse[k], 4), nsmall = 4),
+  tokens <- list(kdim = k_dim, epoch = k_epoch, trainrmse = format(round(rmse[k], 4), nsmall = 4),
                             testrmse = format(round(rmse_test[k], 4), nsmall = 4),
                             delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE))
 
@@ -65,14 +65,14 @@ matrix_factorisation <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001
       for (j in 1:ncol(Y)) {
         ur <- observed_user_list[[j]]
         U[ur, latent_var] <- U[ur, latent_var] + lr*(error[ur, j]*V[j, latent_var] - lambda*U[ur, latent_var])
-        if(pbar) pb$tick(tokens = tokens())
+        if(pbar) pb$tick(tokens = tokens)
       }
 
       # loop through each user where there exists a rating and update V
       for (i in 1:nrow(Y)) {
         ir <- observed_item_list[[i]]
         V[ir, latent_var] <- V[ir, latent_var] + lr*(error[i, ir]*U[i, latent_var] - lambda*V[ir, latent_var])
-        if(pbar) pb$tick(tokens = tokens())
+        if(pbar) pb$tick(tokens = tokens)
       }
 
       error <- (Y_train - U %*% t(V))
@@ -81,12 +81,14 @@ matrix_factorisation <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001
       k <- k + 1
       delta <- abs(rmse[k-1] - rmse[k])
       if(is.nan(rmse[k])) stop("gradient explosion - try smaller learning rate")
-
-      if(pbar) pb$tick(tokens = tokens())
+      tokens <- list(kdim = k_dim, epoch = k_epoch, trainrmse = format(round(rmse[k], 4), nsmall = 4),
+                     testrmse = format(round(rmse_test[k], 4), nsmall = 4),
+                     delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE))
+      if(pbar) pb$tick(tokens = tokens)
     }
     k_epoch <- k_epoch + 1
   }
-  out <- list(pred = U %*% t(V), u = U, v = V, k_dim = k_dim, epochs = epochs, train = rmse, test = rmse_test, delta = delta)
+  out <- list(pred = U %*% t(V), u = U, v = V, epochs = epochs, train = rmse, test = rmse_test)
   class(out) <- append(class(out), "mf")
   return(out)
 }
