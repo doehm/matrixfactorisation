@@ -14,6 +14,8 @@
 #' }
 #' @export
 
+# utils::globalVariables(c("epoch", "rmse", "set"))
+
 # plot mat fact
 plot.mf <- function(x, ...){
   if(all(is.nan(x$test))){

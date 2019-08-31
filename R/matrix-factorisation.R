@@ -53,8 +53,8 @@ matrix_factorisation <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001
                             testrmse = format(round(rmse_test[k], 4), nsmall = 4),
                             delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE))
 
-  fmt <- ":spin :elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // test :testrmse // delta :delta"
-  if(is.null(test)) fmt <- ":spin :elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // delta :delta"
+  fmt <- ":elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // test :testrmse // delta :delta"
+  if(is.null(test)) fmt <- ":elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // delta :delta"
   pb <- progress_bar$new(format = fmt, clear = FALSE, total = NA)
 
   while ((k_epoch <= epochs & tol < delta)) {
@@ -89,6 +89,7 @@ matrix_factorisation <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001
     k_epoch <- k_epoch + 1
   }
   out <- list(pred = U %*% t(V), u = U, v = V, epochs = epochs, train = rmse, test = rmse_test)
+  cat("\n")
   class(out) <- append(class(out), "mf")
   return(out)
 }

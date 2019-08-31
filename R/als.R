@@ -44,19 +44,18 @@ als <- function(Y, k_dim, test = NULL, epochs = 10, lambda = 0.01, tol = 1e-6, p
   rmse_test <- sqrt(sum((Y - U %*% t(V))[test]^2)/length(test))
   delta <- Inf
   test_delta <- Inf
-  k_epoch <- 1
   k <- 1
 
-  tokens <- list(kdim = k_dim, epoch = k_epoch, trainrmse = format(round(rmse[k], 4), nsmall = 4),
+  tokens <- list(kdim = k_dim, epoch = k, trainrmse = format(round(rmse[k], 4), nsmall = 4),
                             testrmse = format(round(rmse_test[k], 4), nsmall = 4),
                             delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE))
 
-  fmt <- ":spin :elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // test :testrmse // delta :delta"
-  if(is.null(test)) fmt <- ":spin :elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // delta :delta"
+  fmt <- ":elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // test :testrmse // delta :delta"
+  if(is.null(test)) fmt <- ":elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // delta :delta"
   pb <- progress_bar$new(format = fmt, clear = FALSE, total = NA)
 
   # als
-  while ((k_epoch <= epochs & tol < delta)) {
+  while ((k <= epochs & tol < delta)) {
 
     # loop through each item where there exists a rating and update U
     for (j in 1:ncol(Y)) {
@@ -81,14 +80,13 @@ als <- function(Y, k_dim, test = NULL, epochs = 10, lambda = 0.01, tol = 1e-6, p
     rmse_test <- c(rmse_test, sqrt(sum((Y - U %*% t(V))[test]^2)/length(test)))
     k <- k + 1
     delta <- abs(rmse[k-1] - rmse[k])
-    tokens <- list(kdim = k_dim, epoch = k_epoch, trainrmse = format(round(rmse[k], 4), nsmall = 4),
+    tokens <- list(kdim = k_dim, epoch = k, trainrmse = format(round(rmse[k], 4), nsmall = 4),
                    testrmse = format(round(rmse_test[k], 4), nsmall = 4),
                    delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE))
     if(pbar) pb$tick(tokens = tokens)
-
-    k_epoch <- k_epoch + 1
   }
   out <- list(pred = U %*% t(V), u = U, v = V, epochs = epochs, train = rmse, test = rmse_test)
+  cat("\n")
   class(out) <- append(class(out), "mf")
   return(out)
 }
