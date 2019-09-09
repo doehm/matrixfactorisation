@@ -1,8 +1,8 @@
-#' @title Matrix factorisation
-#' @description Applies matrix factorisation by gradient descent (Funk SVD) to a given matrix with missing values
+#' @title Matrix factorisation (Funk SVD)
+#' @description Applies matrix factorisation by gradient descent to a given matrix with missing values
 #' @param Y Matrix with missing values. Missing values should be \code{NA}
 #' @param k_dim Number of latent variables
-#' @param test The select test. See \code{select_test}
+#' @param test The selected test set of observations. See \code{select_test}
 #' @param epochs Maximum iterations
 #' @param lr Learning rate
 #' @param lambda Regularisation parameter
@@ -18,15 +18,15 @@
 #' \dontrun{
 #' m <- matrix(sample(c(NA, 1:5), 60, replace = TRUE, prob = c(0.2, rep(0.8/5, 5))), nrow = 10)
 #' id <- select_test(m, 0.2)
-#' mf <- matrix_factorisation(m, 2, test = id$test, pbar = TRUE)
+#' mf <- funksvd(m, 2, test = id$test, pbar = TRUE)
 #' mf$pred
 #' }
 #' @export
 
 
 
-# matrix factorisation function
-matrix_factorisation <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001, lambda = 0.02, tol = 1e-6, pbar = FALSE) {
+# funk svd function
+funksvd <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001, lambda = 0.02, tol = 1e-6, pbar = FALSE) {
 
   # set train
   Y_train <- Y

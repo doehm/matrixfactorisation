@@ -25,7 +25,7 @@ function will output the accuracy of the selected test sample by using \code{tes
 \dontrun{
 m <- matrix(sample(c(NA, 1:5), 60, replace = TRUE, prob = c(0.2, rep(0.8/5, 5))), nrow = 10)
 id <- select_test(m, 0.2)
-mf <- matrix_factorisation(m, 2, test = id$test)
+mf <- funksvd(m, 2, test = id$test)
 mf$pred
 }
 }

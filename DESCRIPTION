@@ -4,7 +4,7 @@ Title: Factorises a matrix using gradient descent
 Version: 0.3.0
 Author: Daniel Oehm
 Maintainer: Daniel Oehm <danieloehm@gmail.com>
-Description: This package contains functions to factorise a matrix using various methods.
+Description: A lightweight package containing functions to factorise a matrix including Funk SVD and ALS. It's purpose it to make applying these methods simple.
 License: CC0
 Depends: 
   progress (>= 1.0.0),
