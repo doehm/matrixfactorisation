@@ -8,8 +8,11 @@
 #' @param tol Iteration tolerance
 #' @param pbar Progress bar toggle
 #' @details Implements alternating least squares. Matrix \code{Y} should have \code{NA}'s as missing values. The matrix will be factorised
-#' into two matrices U and V, the user and feature matrix. The U matrix essentially contains weight each user gives to a certain feature. The
-#' function will output the accuracy of the selected test sample by using \code{test}. See \code{select_test} for more information.
+#' into two matrices U and V, the user and feature matrix. The U matrix essentially contains the ;weight each user gives to a certain feature. The
+#' function will output the accuracy of the selected test sample by using \code{test}. The prediction matrix is return as \code{pred} but can be
+#' calculated by UV^T.
+#'
+#' See \code{select_test} for more information.
 #' @importFrom progress progress_bar
 #' @importFrom stats rnorm
 #' @examples
@@ -17,7 +20,7 @@
 #' m <- matrix(sample(c(NA, 1:5), 60, replace = TRUE, prob = c(0.2, rep(0.8/5, 5))), nrow = 10)
 #' id <- select_test(m, 0.2)
 #' mf <- als(m, 2, test = id$test)
-#' mf$pred
+#' mf$u %*% t(mf$v)
 #' }
 #' @export
 
@@ -46,10 +49,6 @@ als <- function(Y, k_dim, test = NULL, epochs = 10, lambda = 0.01, tol = 1e-6, p
   test_delta <- Inf
   k <- 1
 
-  tokens <- list(kdim = k_dim, epoch = k, trainrmse = format(round(rmse[k], 4), nsmall = 4),
-                            testrmse = format(round(rmse_test[k], 4), nsmall = 4),
-                            delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE))
-
   fmt <- ":elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // test :testrmse // delta :delta"
   if(is.null(test)) fmt <- ":elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // delta :delta"
   pb <- progress_bar$new(format = fmt, clear = FALSE, total = NA)
@@ -63,7 +62,6 @@ als <- function(Y, k_dim, test = NULL, epochs = 10, lambda = 0.01, tol = 1e-6, p
       u <- U[ur,]
       if(length(ur) == 1) u <- matrix(U[ur,], ncol = k_dim)
       V[j, ] <- t((solve(t(u) %*% u + lambda*diag(k_dim)) %*% t(u)) %*% Y_train[ur, j])
-      if(pbar) pb$tick(tokens = tokens)
     }
 
     # loop through each user where there exists a rating and update V
@@ -72,7 +70,6 @@ als <- function(Y, k_dim, test = NULL, epochs = 10, lambda = 0.01, tol = 1e-6, p
       v <- V[ir,]
       if(length(ir) == 1) v <- matrix(V[ir,], ncol = k_dim)
       U[i, ] <- t((solve(t(v) %*% v + lambda*diag(k_dim)) %*% t(v)) %*% Y_train[i, ir])
-      if(pbar) pb$tick(tokens = tokens)
     }
 
     error <- (Y_train - U %*% t(V))
@@ -85,7 +82,7 @@ als <- function(Y, k_dim, test = NULL, epochs = 10, lambda = 0.01, tol = 1e-6, p
                    delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE))
     if(pbar) pb$tick(tokens = tokens)
   }
-  out <- list(pred = U %*% t(V), u = U, v = V, epochs = epochs, train = rmse, test = rmse_test)
+  out <- list(u = U, v = V, epochs = epochs, train = rmse, test = rmse_test)
   cat("\n")
   class(out) <- append(class(out), "mf")
   return(out)

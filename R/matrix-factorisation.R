@@ -7,10 +7,13 @@
 #' @param lr Learning rate
 #' @param lambda Regularisation parameter
 #' @param tol Iteration tolerance
-#' @param pbar Progress bar toggle
+#' @param pbar Progress bar toggle. Turning progress on does slow computation slightly.
 #' @details Implements matrix factorisation by gradient descent. Matrix \code{Y} should have \code{NA}'s as missing values. The matrix will be factorised
-#' into two matrices U and V, the user and feature matrix. The U matrix essentially contains weight each user gives to a certain feature. The
-#' function will output the accuracy of the selected test sample by using \code{test}. See \code{select_test} for more information.
+#' into two matrices U and V, the user and feature matrix. The U matrix essentially contains the ;weight each user gives to a certain feature. The
+#' function will output the accuracy of the selected test sample by using \code{test}. The prediction matrix is return as \code{pred} but can be
+#' calculated by UV^T.
+#'
+#' See \code{select_test} for more information.
 #' @rdname matfact
 #' @importFrom progress progress_bar
 #' @importFrom stats rnorm
@@ -19,7 +22,7 @@
 #' m <- matrix(sample(c(NA, 1:5), 60, replace = TRUE, prob = c(0.2, rep(0.8/5, 5))), nrow = 10)
 #' id <- select_test(m, 0.2)
 #' mf <- funksvd(m, 2, test = id$test, pbar = TRUE)
-#' mf$pred
+#' mf$u %*% t(mf$v)
 #' }
 #' @export
 
@@ -49,10 +52,6 @@ funksvd <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001, lambda = 0.
   k_epoch <- 1
   k <- 1
 
-  tokens <- list(kdim = k_dim, epoch = k_epoch, trainrmse = format(round(rmse[k], 4), nsmall = 4),
-                            testrmse = format(round(rmse_test[k], 4), nsmall = 4),
-                            delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE))
-
   fmt <- ":elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // test :testrmse // delta :delta"
   if(is.null(test)) fmt <- ":elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // delta :delta"
   pb <- progress_bar$new(format = fmt, clear = FALSE, total = NA)
@@ -65,14 +64,12 @@ funksvd <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001, lambda = 0.
       for (j in 1:ncol(Y)) {
         ur <- observed_user_list[[j]]
         U[ur, latent_var] <- U[ur, latent_var] + lr*(error[ur, j]*V[j, latent_var] - lambda*U[ur, latent_var])
-        if(pbar) pb$tick(tokens = tokens)
       }
 
       # loop through each user where there exists a rating and update V
       for (i in 1:nrow(Y)) {
         ir <- observed_item_list[[i]]
         V[ir, latent_var] <- V[ir, latent_var] + lr*(error[i, ir]*U[i, latent_var] - lambda*V[ir, latent_var])
-        if(pbar) pb$tick(tokens = tokens)
       }
 
       error <- (Y_train - U %*% t(V))
@@ -88,7 +85,7 @@ funksvd <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001, lambda = 0.
     }
     k_epoch <- k_epoch + 1
   }
-  out <- list(pred = U %*% t(V), u = U, v = V, epochs = epochs, train = rmse, test = rmse_test)
+  out <- list(u = U, v = V, epochs = epochs, train = rmse, test = rmse_test)
   cat("\n")
   class(out) <- append(class(out), "mf")
   return(out)

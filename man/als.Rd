@@ -27,14 +27,17 @@ Implements alternating least squares matrix factorisation on a given matrix
 }
 \details{
 Implements alternating least squares. Matrix \code{Y} should have \code{NA}'s as missing values. The matrix will be factorised
-into two matrices U and V, the user and feature matrix. The U matrix essentially contains weight each user gives to a certain feature. The
-function will output the accuracy of the selected test sample by using \code{test}. See \code{select_test} for more information.
+into two matrices U and V, the user and feature matrix. The U matrix essentially contains the ;weight each user gives to a certain feature. The
+function will output the accuracy of the selected test sample by using \code{test}. The prediction matrix is return as \code{pred} but can be
+calculated by UV^T.
+
+See \code{select_test} for more information.
 }
 \examples{
 \dontrun{
 m <- matrix(sample(c(NA, 1:5), 60, replace = TRUE, prob = c(0.2, rep(0.8/5, 5))), nrow = 10)
 id <- select_test(m, 0.2)
 mf <- als(m, 2, test = id$test)
-mf$pred
+mf$u \%*\% t(mf$v)
 }
 }
