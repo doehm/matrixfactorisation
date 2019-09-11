@@ -38,6 +38,6 @@ See \code{select_test} for more information.
 m <- matrix(sample(c(NA, 1:5), 60, replace = TRUE, prob = c(0.2, rep(0.8/5, 5))), nrow = 10)
 id <- select_test(m, 0.2)
 mf <- als(m, 2, test = id$test)
-mf$u \%*\% t(mf$v)
+mf$pred
 }
 }

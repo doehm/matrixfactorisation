@@ -7,7 +7,7 @@
 #' @param lr Learning rate
 #' @param lambda Regularisation parameter
 #' @param tol Iteration tolerance
-#' @param pbar Progress bar toggle. Turning progress on does slow computation slightly.
+#' @param pbar Progress bar toggle. Turning progress on slows computation slightly.
 #' @details Implements matrix factorisation by gradient descent. Matrix \code{Y} should have \code{NA}'s as missing values. The matrix will be factorised
 #' into two matrices U and V, the user and feature matrix. The U matrix essentially contains the ;weight each user gives to a certain feature. The
 #' function will output the accuracy of the selected test sample by using \code{test}. The prediction matrix is return as \code{pred} but can be
@@ -21,15 +21,15 @@
 #' \dontrun{
 #' m <- matrix(sample(c(NA, 1:5), 60, replace = TRUE, prob = c(0.2, rep(0.8/5, 5))), nrow = 10)
 #' id <- select_test(m, 0.2)
-#' mf <- funksvd(m, 2, test = id$test, pbar = TRUE)
-#' mf$u %*% t(mf$v)
+#' mf <- matrix_factorisation(m, 2, test = id$test, pbar = TRUE)
+#' mf$pred
 #' }
 #' @export
 
 
 
 # funk svd function
-funksvd <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001, lambda = 0.02, tol = 1e-6, pbar = FALSE) {
+matrix_factorisation <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001, lambda = 0.02, tol = 1e-6, pbar = FALSE) {
 
   # set train
   Y_train <- Y
@@ -56,7 +56,7 @@ funksvd <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001, lambda = 0.
   if(is.null(test)) fmt <- ":elapsedfull // dimensions :kdim // epoch :epoch // train :trainrmse // delta :delta"
   pb <- progress_bar$new(format = fmt, clear = FALSE, total = NA)
 
-  while ((k_epoch <= epochs & tol < delta)) {
+  while (k_epoch <= epochs & tol < delta) {
 
     for (latent_var in 1:k_dim) {
 
@@ -85,7 +85,7 @@ funksvd <- function(Y, k_dim, test = NULL, epochs = 500, lr = 0.001, lambda = 0.
     }
     k_epoch <- k_epoch + 1
   }
-  out <- list(u = U, v = V, epochs = epochs, train = rmse, test = rmse_test)
+  out <- list(pred = U %*% t(V), u = U, v = V, epochs = epochs, train = rmse, test = rmse_test)
   cat("\n")
   class(out) <- append(class(out), "mf")
   return(out)

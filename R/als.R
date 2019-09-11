@@ -20,7 +20,7 @@
 #' m <- matrix(sample(c(NA, 1:5), 60, replace = TRUE, prob = c(0.2, rep(0.8/5, 5))), nrow = 10)
 #' id <- select_test(m, 0.2)
 #' mf <- als(m, 2, test = id$test)
-#' mf$u %*% t(mf$v)
+#' mf$pred
 #' }
 #' @export
 
@@ -54,7 +54,7 @@ als <- function(Y, k_dim, test = NULL, epochs = 10, lambda = 0.01, tol = 1e-6, p
   pb <- progress_bar$new(format = fmt, clear = FALSE, total = NA)
 
   # als
-  while ((k <= epochs & tol < delta)) {
+  while (k <= epochs & tol < delta) {
 
     # loop through each item where there exists a rating and update U
     for (j in 1:ncol(Y)) {
@@ -82,7 +82,7 @@ als <- function(Y, k_dim, test = NULL, epochs = 10, lambda = 0.01, tol = 1e-6, p
                    delta = format(delta, digits = 4, nsmall = 4, scientific = TRUE))
     if(pbar) pb$tick(tokens = tokens)
   }
-  out <- list(u = U, v = V, epochs = epochs, train = rmse, test = rmse_test)
+  out <- list(pred = U %*% t(V), u = U, v = V, epochs = epochs, train = rmse, test = rmse_test)
   cat("\n")
   class(out) <- append(class(out), "mf")
   return(out)
