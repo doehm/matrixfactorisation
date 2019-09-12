@@ -17,9 +17,8 @@ select_test(Y, r, min_row = 1)
 Select a test set to pass to \code{matrix_factorisation}
 }
 \details{
-Implements matrix factorisation by gradient descent. Matrix \code{Y} should have \code{NA}'s as missing values. The matrix will be factorised
-into two matrices U and V, the user and feature matrix. The U matrix essentially contains weight each user gives to a certain feature. The
-function will output the accuracy of the selected test sample by using \code{test}. See \code{select_test} for more information.
+Selects a test to be used with \code{matrix_factorisation}. It returns the train set - the original matrix with NA's for cells
+held out for the test and the test id vector. This can be useful to monitor the convergence and prediction accuracy.
 }
 \examples{
 \dontrun{

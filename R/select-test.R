@@ -3,9 +3,8 @@
 #' @param Y Matrix with missing values. Missing values should be \code{NA}
 #' @param r Ratio i.e. proption of observations held out for testing
 #' @param min_row The minimum observations to leave in each row. This protects against leaving an entire row missing.
-#' @details Implements matrix factorisation by gradient descent. Matrix \code{Y} should have \code{NA}'s as missing values. The matrix will be factorised
-#' into two matrices U and V, the user and feature matrix. The U matrix essentially contains weight each user gives to a certain feature. The
-#' function will output the accuracy of the selected test sample by using \code{test}. See \code{select_test} for more information.
+#' @details Selects a test to be used with \code{matrix_factorisation}. It returns the train set - the original matrix with NA's for cells
+#' held out for the test and the test id vector. This can be useful to monitor the convergence and prediction accuracy.
 #' @importFrom progress progress_bar
 #' @examples
 #' \dontrun{

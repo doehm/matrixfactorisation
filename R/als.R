@@ -8,11 +8,9 @@
 #' @param tol Iteration tolerance
 #' @param pbar Progress bar toggle
 #' @details Implements alternating least squares. Matrix \code{Y} should have \code{NA}'s as missing values. The matrix will be factorised
-#' into two matrices U and V, the user and feature matrix. The U matrix essentially contains the ;weight each user gives to a certain feature. The
+#' into two matrices U and V, the user and feature matrix. The U matrix essentially contains the weight each user gives to a certain feature. The
 #' function will output the accuracy of the selected test sample by using \code{test}. The prediction matrix is return as \code{pred} but can be
-#' calculated by UV^T.
-#'
-#' See \code{select_test} for more information.
+#' calculated by UV^T. See \code{select_test} for more information.
 #' @importFrom progress progress_bar
 #' @importFrom stats rnorm
 #' @examples

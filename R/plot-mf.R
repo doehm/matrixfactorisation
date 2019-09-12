@@ -13,7 +13,6 @@
 #' plot(mf)
 #' }
 #' @export
-#' @
 
 # utils::globalVariables(c("epoch", "rmse", "set"))
 
